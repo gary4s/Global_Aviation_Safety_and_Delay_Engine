@@ -1,7 +1,7 @@
 # Global_Aviation_Safety_and_Delay_Engine
 A pipeline that ingests flight data and weather conditions to predict landing delays.
 
-# Project: Cloud-Native Aviation Data Intelligence
+## Project: Cloud-Native Aviation Data Intelligence
 End-to-End Azure Data Engineering & Predictive Analytics
 
 # Project Overview
@@ -22,7 +22,7 @@ Transformation (Silver): A Databricks Spark job cleans the data, enforces schema
 Aggregation (Gold): Cleaned data is aggregated into high-performance Delta Tables optimized for machine learning.
 Intelligence: A Random Forest model is trained on Databricks to predict delays, tracked via MLflow, and deployed as a containerized FastAPI service.
 
-# Engineering Highlights (The "Portfolio Flex")
+# Engineering Highlights
 Containerization: Used Docker to ensure the local development environment perfectly matches the cloud production environment.
 ACID Transactions: Implemented Delta Lake to allow for time-travel, data versioning, and reliable upserts.
 Scalability: Leveraged Databricks clusters to handle distributed PySpark processing, allowing the pipeline to scale to millions of rows.
