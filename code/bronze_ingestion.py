@@ -2,13 +2,15 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, BooleanType, LongType
 import requests
 import sys
+import os
+from dotenv import load_dotenv
 
 # config
 
-STORAGE_ACCOUNT = "aviationdatalakegary"
-CLIENT_ID = "3b31bffa-4398-4c45-bbab-9e617f04fdc0"
-TENANT_ID = "f771d400-a8e3-4001-91c3-4903c9f77ae5"
-CLIENT_SECRET = "4xB8Q~aYRh2TdkfKcVei3f.~79A6u7z.zNDB2ci~"
+STORAGE_ACCOUNT = os.getenv("STORAGE_ACCOUNT")
+CLIENT_ID       = os.getenv("CLIENT_ID")
+TENANT_ID       = os.getenv("TENANT_ID")
+CLIENT_SECRET   = os.getenv("CLIENT_SECRET")
 CONTAINER = "bronze"
 
 def main():
