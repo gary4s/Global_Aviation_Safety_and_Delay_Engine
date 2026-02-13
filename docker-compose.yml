@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  spark-dev:
+    image: apache/spark:3.5.0-python3
+    container_name: aviation_spark_dev
+    user: root
+    ports:
+      - "9081:8080"  # Computer 9081 -> Spark internal 8080
+      - "9040:4040"  # Computer 9040 -> Spark internal 4040
+      - "7077:7077"
+    volumes:
+      - ./code:/opt/spark/work-dir
+    environment:
+      - SPARK_MODE=master
+    # IMPORTANT: We must tell Spark to start the Master process
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+
+  postgres:
+    image: postgres:13
+    container_name: aviation_db
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+
+  airflow:
+    image: apache/airflow:2.7.1
+    container_name: aviation_airflow
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+    ports:
+      - "9000:8080" # Computer 9000 -> Airflow internal 8080
+    command: standalone
