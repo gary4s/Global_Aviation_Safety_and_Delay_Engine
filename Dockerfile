@@ -17,9 +17,11 @@ RUN apt-get update && apt-get install -y curl && \
     scikit-learn \
     mlflow \
     azure-storage-blob \
-    azure-identity
+    azure-identity \
+    azure-keyvault-secrets
 
 WORKDIR /opt/spark/work-dir
 EXPOSE 4040
 
 CMD ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
+
