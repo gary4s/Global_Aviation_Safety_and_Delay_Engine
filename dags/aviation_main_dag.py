@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
+from airflow.providers.microsoft.azure.operators.data_factory import AzureDataFactoryRunPipelineOperator
 
 #defualt args for all tasks
 default_args = {
@@ -22,9 +23,17 @@ with DAG(
 ) as dag:
     
 # Task 1: Ingest (Fixing the path and the filename)
-    ingest_bronze = BashOperator(
-        task_id='ingest_bronze',
-        bash_command='python3 /opt/airflow/code/bronze_ingestion.py'
+ #  ingest_bronze = BashOperator(
+ #       task_id='ingest_bronze',
+ #       bash_command='python3 /opt/airflow/code/bronze_ingestion.py'
+ #   )
+    # code for AirFlow to orchestrate ADF
+    ingest_bronze = AzureDataFactoryRunPipelineOperator(
+        task_id = 'ingest_bronze_via_adf',
+        pipeline_name = 'p_aviation_ingestion',
+        azure_data_factory_conn_id = 'azure_data_factory_conn',
+        wait_for_termination = True,
+        dag=dag,
     )
 
     # Task 2: Silver (Using the /opt/airflow/ path)
