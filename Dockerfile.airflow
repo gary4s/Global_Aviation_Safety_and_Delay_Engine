@@ -1,0 +1,14 @@
+FROM apache/airflow:2.7.1
+
+USER root
+
+# Install Java (needed for Spark to run inside Airflow)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends default-jre && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+USER airflow
+
+# Install Python dependencies as the airflow user
+RUN pip install --no-cache-dir pyspark python-dotenv requests azure-storage-blob azure-identity

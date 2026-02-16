@@ -1,17 +1,48 @@
+import os
+import sys
+import requests
+from pathlib import Path # Required for the Path() call
+from dotenv import load_dotenv
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, BooleanType, LongType
-import requests
-import sys
-import os
-from dotenv import load_dotenv
 
-# config
+# --- CONFIG LOADING ---
+possible_paths = [
+    Path.cwd() / '.env',
+    Path(__file__).resolve().parent / '.env',
+    Path(__file__).resolve().parent.parent / '.env',
+    Path('/opt/spark/work-dir/.env') # Direct Docker path
+]
+
+env_loaded = False
+for path in possible_paths:
+    if load_dotenv(dotenv_path=path):
+        print("\n" + "=" *40)    
+        print(f"\n .env file found and loaded from: {path}")
+        print("\n" + "=" *40)
+        env_loaded = True
+        break
+
+if not env_loaded:
+    print("\n" + "=" *40)
+    print("\n FATAL ERROR: Could not find .env file in any of these locations:")
+    print("\n" + "=" *40)
+    for p in possible_paths: print(f"  - {p}")
+    sys.exit(1)
+
 
 STORAGE_ACCOUNT = os.getenv("STORAGE_ACCOUNT")
 CLIENT_ID       = os.getenv("CLIENT_ID")
 TENANT_ID       = os.getenv("TENANT_ID")
 CLIENT_SECRET   = os.getenv("CLIENT_SECRET")
-CONTAINER = "bronze"
+CONTAINER       = "bronze"
+
+# Safety check: Stop if variables are still empty
+if not all([STORAGE_ACCOUNT, CLIENT_ID, TENANT_ID, CLIENT_SECRET]):
+    print("=" *40 + "\n")
+    print("ERROR: One or more environment variables are missing. Check .env keys.")
+    print("=" *40 + "\n")
+    sys.exit(1)
 
 def main():
     #initialise spark with azure drivers

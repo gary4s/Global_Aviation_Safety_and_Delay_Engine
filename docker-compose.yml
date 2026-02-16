@@ -1,18 +1,21 @@
 version: '3.8'
+
 services:
   spark-dev:
-    image: apache/spark:3.5.0-python3
+    build: 
+      context: .
+      dockerfile: Dockerfile  # Your existing Spark Dockerfile
     container_name: aviation_spark_dev
+
     user: root
     ports:
-      - "9081:8080"  # Computer 9081 -> Spark internal 8080
-      - "9040:4040"  # Computer 9040 -> Spark internal 4040
+      - "9081:8080"
+      - "9040:4040"
       - "7077:7077"
     volumes:
-      - ./code:/opt/spark/work-dir
+      - .:/opt/spark/work-dir
     environment:
       - SPARK_MODE=master
-    # IMPORTANT: We must tell Spark to start the Master process
     command: >
       /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
 
@@ -25,14 +28,26 @@ services:
       - POSTGRES_DB=airflow
 
   airflow:
-    image: apache/airflow:2.7.1
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     container_name: aviation_airflow
     depends_on:
       - postgres
     environment:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__WEBSERVER__AUTHENTICATE=False
+      - AIRFLOW_ADMIN_USER=admin
+      - AIRFLOW_ADMIN_PASSWORD=admin123
     volumes:
       - ./dags:/opt/airflow/dags
+      - ./code:/opt/airflow/code
+      - ./.env:/opt/airflow/.env 
     ports:
-      - "9000:8080" # Computer 9000 -> Airflow internal 8080
-    command: standalone
+      - "9000:8080"
+    # Entrypoint only handles Airflow setup, not system installs
+    entrypoint: >
+      /bin/bash -c "
+      airflow db init &&
+      airflow users create --username admin --password admin123 --firstname Gary --lastname User --role Admin --email admin@example.com || true &&
+      airflow standalone"
