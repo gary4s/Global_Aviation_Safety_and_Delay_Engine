@@ -4,36 +4,28 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
-
-# --- CONFIG LOADING ---
-possible_paths = [
-    Path.cwd() / '.env',
-    Path(__file__).resolve().parent / '.env',
-    Path(__file__).resolve().parent.parent / '.env',
-    Path('/opt/spark/work-dir/.env') # Direct Docker path
-]
-
-env_loaded = False
-for path in possible_paths:
-    if load_dotenv(dotenv_path=path):
-        print("\n" + "=" *40)    
-        print(f"\n .env file found and loaded from: {path}")
-        print("\n" + "=" *40)
-        env_loaded = True
-        break
-
-if not env_loaded:
-    print("\n" + "=" *40)
-    print("\n FATAL ERROR: Could not find .env file in any of these locations:")
-    print("\n" + "=" *40)
-    for p in possible_paths: print(f"  - {p}")
-    sys.exit(1)
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
 
 STORAGE_ACCOUNT = os.getenv("STORAGE_ACCOUNT")
 CLIENT_ID       = os.getenv("CLIENT_ID")
 TENANT_ID       = os.getenv("TENANT_ID")
 CLIENT_SECRET   = os.getenv("CLIENT_SECRET")
+
+VAULT_URL = f"https://aviation-vault-gary.vault.azure.net/"
+
+try:
+    credential = DefaultAzureCredential()
+    client = SecretClient(vault_url = VAULT_URL, credential = credential)
+
+    #fetch secret from the vault instead of using local .env file
+    VAULT_CLIENT_SECRET = client.get_secret("CLIENT-SECRET").value
+    print("\n[SUCCESS] Connected to Key Vault and retrieved secrets.")
+
+except:
+    print("\n[ERROR] Failed to connect to Key Vault: {e}")
+    sys.exit(1)
 
 spark = SparkSession.builder \
     .appName("Aviation_Silver_Transformation") \

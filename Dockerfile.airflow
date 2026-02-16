@@ -11,4 +11,10 @@ RUN apt-get update && \
 USER airflow
 
 # Install Python dependencies as the airflow user
-RUN pip install --no-cache-dir pyspark python-dotenv requests azure-storage-blob azure-identity
+RUN pip install --no-cache-dir \
+    pyspark \
+    python-dotenv \
+    requests \
+    azure-storage-blob \
+    azure-identity \
+    azure-keyvault-secrets
