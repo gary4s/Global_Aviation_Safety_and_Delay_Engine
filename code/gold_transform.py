@@ -4,6 +4,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
+from azure.identity import ClientSecretCredential
+from azure.keyvault.secrets import SecretClient
 
 #Load credentials
 possible_paths = [
@@ -35,6 +37,27 @@ CLIENT_ID       = os.getenv("CLIENT_ID")
 TENANT_ID       = os.getenv("TENANT_ID")
 CLIENT_SECRET   = os.getenv("CLIENT_SECRET")
 
+VAULT_URL = f"https://aviation-vault-gary.vault.azure.net/"
+
+try:
+    credential = ClientSecretCredential(
+        tenant_id=TENANT_ID,
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET
+    )
+
+    client = SecretClient(vault_url=VAULT_URL, credential=credential)
+
+    #fetch secret from the vault instead of using local .env file
+    VAULT_CLIENT_SECRET = client.get_secret("CLIENT-SECRET").value
+    print("\n[SUCCESS] Connected to Key Vault and retrieved secrets.")
+
+except Exception as e:
+    print("\n" + "!"*40)
+    print(f"KEY VAULT ERROR: {str(e)}") # Using str(e) ensures the full error prints
+    print("!"*40)
+    sys.exit(1)
+
 #BUILD THE SPARK SESSION
 spark = SparkSession.builder \
     .appName("Aviation_EDA") \
@@ -42,7 +65,7 @@ spark = SparkSession.builder \
     .config(f"fs.azure.account.auth.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "OAuth") \
     .config(f"fs.azure.account.oauth.provider.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider") \
     .config(f"fs.azure.account.oauth2.client.id.{STORAGE_ACCOUNT}.dfs.core.windows.net", CLIENT_ID) \
-    .config(f"fs.azure.account.oauth2.client.secret.{STORAGE_ACCOUNT}.dfs.core.windows.net", CLIENT_SECRET) \
+    .config(f"fs.azure.account.oauth2.client.secret.{STORAGE_ACCOUNT}.dfs.core.windows.net", VAULT_CLIENT_SECRET) \
     .config(f"fs.azure.account.oauth2.client.endpoint.{STORAGE_ACCOUNT}.dfs.core.windows.net", f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/token") \
     .getOrCreate()
 

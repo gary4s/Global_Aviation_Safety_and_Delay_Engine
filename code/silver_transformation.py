@@ -4,27 +4,65 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
-from azure.identity import DefaultAzureCredential
+from azure.identity import ClientSecretCredential
 from azure.keyvault.secrets import SecretClient
 
+#Load credentials
+possible_paths = [
+    Path.cwd() / '.env',
+    Path(__file__).resolve().parent / '.env',
+    Path(__file__).resolve().parent.parent / '.env',
+    Path('/opt/spark/work-dir/.env') # Direct Docker path
+]
+
+env_loaded = False
+
+for path in possible_paths:
+    if load_dotenv(dotenv_path=path):
+        print("\n" + "=" *40)    
+        print(f"\n .env file found and loaded from: {path}")
+        print("\n" + "=" *40)
+        env_loaded = True
+        break
+
+if not env_loaded:
+    print("\n" + "=" *40)
+    print("\n FATAL ERROR: Could not find .env file in any of these locations:")
+    print("\n" + "=" *40)
+    for p in possible_paths: print(f"  - {p}")
+    sys.exit(1)
 
 STORAGE_ACCOUNT = os.getenv("STORAGE_ACCOUNT")
 CLIENT_ID       = os.getenv("CLIENT_ID")
 TENANT_ID       = os.getenv("TENANT_ID")
 CLIENT_SECRET   = os.getenv("CLIENT_SECRET")
 
+# --- PLACE THE DEBUG LINES HERE ---
+#print("\n" + "-"*30)
+#print(f"DEBUG: CLIENT_ID is '{CLIENT_ID}'")
+#print(f"DEBUG: TENANT_ID is '{TENANT_ID}'")
+#print(f"DEBUG: STORAGE_ACCOUNT is '{STORAGE_ACCOUNT}'")
+#print("-"*30 + "\n")
+
 VAULT_URL = f"https://aviation-vault-gary.vault.azure.net/"
 
 try:
-    credential = DefaultAzureCredential()
-    client = SecretClient(vault_url = VAULT_URL, credential = credential)
+    credential = ClientSecretCredential(
+        tenant_id=TENANT_ID,
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET
+    )
+
+    client = SecretClient(vault_url=VAULT_URL, credential=credential)
 
     #fetch secret from the vault instead of using local .env file
     VAULT_CLIENT_SECRET = client.get_secret("CLIENT-SECRET").value
     print("\n[SUCCESS] Connected to Key Vault and retrieved secrets.")
 
-except:
-    print("\n[ERROR] Failed to connect to Key Vault: {e}")
+except Exception as e:
+    print("\n" + "!"*40)
+    print(f"KEY VAULT ERROR: {str(e)}") # Using str(e) ensures the full error prints
+    print("!"*40)
     sys.exit(1)
 
 spark = SparkSession.builder \
