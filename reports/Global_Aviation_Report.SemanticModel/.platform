@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Global_Aviation_Report"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "71a52970-e4db-4bc9-b081-21ddbaa12870"
+  }
+}

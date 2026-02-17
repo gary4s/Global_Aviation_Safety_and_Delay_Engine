@@ -1,0 +1,53 @@
+table 'Daily Summary'
+	lineageTag: b8f56e78-a030-4a03-a896-62b4b9b0dd63
+
+	column 'Source.Name'
+		dataType: string
+		lineageTag: e6da21ca-40ce-4744-8cc5-ec8e1ecda7d6
+		summarizeBy: none
+		sourceColumn: Source.Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column processed_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 3e15b32e-2e26-4a7e-8835-3a926da33dee
+		summarizeBy: none
+		sourceColumn: processed_at
+
+		variation Variation
+			isDefault
+			relationship: bb4840a6-1606-4b60-beea-c2c614f0b56a
+			defaultHierarchy: LocalDateTable_89b435ce-5093-48d6-b8b0-429cf7d66ffb.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_global_flights
+		dataType: int64
+		formatString: 0
+		lineageTag: ab93fc18-f0f3-45fc-910a-c61f033b9d60
+		summarizeBy: sum
+		sourceColumn: total_global_flights
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Daily Summary' = m
+		mode: import
+		source =
+				let
+				    Source = AzureStorage.DataLake("https://aviationdatalakegary.dfs.core.windows.net/"),
+				    #"Filtered Rows" = Table.SelectRows(Source, each ([Folder Path] = "https://aviationdatalakegary.dfs.core.windows.net/gold/daily_summary/") and ([Name] = "part-00000-8e9af61f-1014-42f2-9cbe-88d81b65f51d-c000.snappy.parquet")),
+				    #"Filtered Hidden Files1" = Table.SelectRows(#"Filtered Rows", each [Attributes]?[Hidden]? <> true),
+				    #"Invoke Custom Function1" = Table.AddColumn(#"Filtered Hidden Files1", "Transform File (4)", each #"Transform File (4)"([Content])),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Invoke Custom Function1", {"Name", "Source.Name"}),
+				    #"Removed Other Columns1" = Table.SelectColumns(#"Renamed Columns1", {"Source.Name", "Transform File (4)"}),
+				    #"Expanded Table Column1" = Table.ExpandTableColumn(#"Removed Other Columns1", "Transform File (4)", Table.ColumnNames(#"Transform File (4)"(#"Sample File (4)"))),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Expanded Table Column1",{{"Source.Name", type text}, {"processed_at", type datetime}, {"total_global_flights", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

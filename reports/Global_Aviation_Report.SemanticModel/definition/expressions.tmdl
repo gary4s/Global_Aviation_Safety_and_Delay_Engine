@@ -1,0 +1,227 @@
+expression Parameter1 = #"Sample File" meta [IsParameterQuery=true, BinaryIdentifier=#"Sample File", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: 810715bd-2bf2-4669-b57f-a465ac7d44e0
+	queryGroup: 'Transform File from Query1\Helper Queries'
+
+	annotation PBI_ResultType = Binary
+
+expression Parameter2 = #"Sample File (2)" meta [IsParameterQuery=true, BinaryIdentifier=#"Sample File (2)", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: d7496b91-4a3f-4866-8552-7c1f83800992
+	queryGroup: 'Transform File from Query1 (2)\Helper Queries'
+
+	annotation PBI_ResultType = Binary
+
+expression Parameter3 = #"Sample File (3)" meta [IsParameterQuery=true, BinaryIdentifier=#"Sample File (3)", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: 73230633-8824-4eed-a52a-6ae47a6c3bb9
+	queryGroup: 'Transform File from Country stats\Helper Queries'
+
+	annotation PBI_ResultType = Binary
+
+expression Parameter4 = #"Sample File (4)" meta [IsParameterQuery=true, BinaryIdentifier=#"Sample File (4)", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: 0f777828-35bb-42b5-8895-5f165d80ba31
+	queryGroup: 'Transform File from Query1 (3)\Helper Queries'
+
+	annotation PBI_ResultType = Binary
+
+expression 'Sample File' =
+		let
+		    Source = AzureStorage.DataLake("https://aviationdatalakegary.dfs.core.windows.net/"),
+		    Navigation1 = Source{0}[Content]
+		in
+		    Navigation1
+	lineageTag: a73be228-3cc6-4340-a5e5-62db8c595dbe
+	queryGroup: 'Transform File from Query1\Helper Queries'
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transform Sample File' =
+		let
+		    Source = Json.Document(Parameter1),
+		    #"Converted to Table" = Table.FromRecords({Source}),
+		    #"Expanded states" = Table.ExpandListColumn(#"Converted to Table", "states"),
+		    #"Split Column" = Table.SplitColumn(#"Expanded states", "states", each _, {"states.0", "states.1", "states.2", "states.3", "states.4", "states.5", "states.6", "states.7", "states.8", "states.9", "states.10", "states.11", "states.12", "states.13", "states.14", "states.15", "states.16"}),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Split Column",{{"time", Int64.Type}, {"states.0", type text}, {"states.1", type text}, {"states.2", type text}, {"states.3", Int64.Type}, {"states.4", Int64.Type}, {"states.5", type number}, {"states.6", type number}, {"states.7", type number}, {"states.8", type logical}, {"states.9", type number}, {"states.10", type number}, {"states.11", type number}, {"states.12", type any}, {"states.13", type number}, {"states.14", Int64.Type}, {"states.15", type logical}, {"states.16", Int64.Type}})
+		in
+		    #"Changed Type"
+	lineageTag: b01219ff-2d1a-4df3-bea6-3309fb7f0dbf
+	queryGroup: 'Transform File from Query1'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transform File' =
+		let
+		    Source = (Parameter1 as binary) => let
+		    Source = Json.Document(Parameter1),
+		    #"Converted to Table" = Table.FromRecords({Source}),
+		    #"Expanded states" = Table.ExpandListColumn(#"Converted to Table", "states"),
+		    #"Split Column" = Table.SplitColumn(#"Expanded states", "states", each _, {"states.0", "states.1", "states.2", "states.3", "states.4", "states.5", "states.6", "states.7", "states.8", "states.9", "states.10", "states.11", "states.12", "states.13", "states.14", "states.15", "states.16"}),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Split Column",{{"time", Int64.Type}, {"states.0", type text}, {"states.1", type text}, {"states.2", type text}, {"states.3", Int64.Type}, {"states.4", Int64.Type}, {"states.5", type number}, {"states.6", type number}, {"states.7", type number}, {"states.8", type logical}, {"states.9", type number}, {"states.10", type number}, {"states.11", type number}, {"states.12", type any}, {"states.13", type number}, {"states.14", Int64.Type}, {"states.15", type logical}, {"states.16", Int64.Type}})
+		in
+		    #"Changed Type"
+		in
+		    Source
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transform Sample File""}" ]
+	lineageTag: 6d4643de-9b2e-4bf2-b304-cd8892b37c31
+	queryGroup: 'Transform File from Query1\Helper Queries'
+
+	annotation PBI_ResultType = Function
+
+expression 'Sample File (2)' =
+		let
+		    Source = AzureStorage.DataLake("https://aviationdatalakegary.dfs.core.windows.net/"),
+		    #"Filtered Rows" = Table.SelectRows(Source, each ([Folder Path] = "https://aviationdatalakegary.dfs.core.windows.net/gold/country_stats/" or [Folder Path] = "https://aviationdatalakegary.dfs.core.windows.net/gold/daily_summary/") and ([Name] <> "_SUCCESS")),
+		    Navigation1 = #"Filtered Rows"{0}[Content]
+		in
+		    Navigation1
+	lineageTag: bbf4a387-ff44-4899-b6a4-a1cd9971d9a9
+	queryGroup: 'Transform File from Query1 (2)\Helper Queries'
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transform Sample File (2)' =
+		let
+		    Source = Parquet.Document(Parameter2, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Source
+	lineageTag: be84e349-00d8-4200-80d8-ed815fd7f1fd
+	queryGroup: 'Transform File from Query1 (2)'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transform File (2)' =
+		let
+		    Source = (Parameter2 as binary) => let
+		    Source = Parquet.Document(Parameter2, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Source
+		in
+		    Source
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transform Sample File (2)""}" ]
+	lineageTag: 3ac34ac0-a1db-4c7a-b0de-ae723db4a48b
+	queryGroup: 'Transform File from Query1 (2)\Helper Queries'
+
+	annotation PBI_ResultType = Function
+
+expression 'Sample File (3)' =
+		let
+		    Source = AzureStorage.DataLake("https://aviationdatalakegary.dfs.core.windows.net/"),
+		    #"Filtered Rows" = Table.SelectRows(Source, each ([Folder Path] = "https://aviationdatalakegary.dfs.core.windows.net/gold/country_stats/") and ([Name] = "part-00000-c60034c6-0c69-4db3-8ceb-82d37b2b8ce1-c000.snappy.parquet")),
+		    Navigation1 = #"Filtered Rows"{0}[Content]
+		in
+		    Navigation1
+	lineageTag: c03b0875-1131-41ae-92ae-f3c560f2be11
+	queryGroup: 'Transform File from Country stats\Helper Queries'
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transform Sample File (3)' =
+		let
+		    Source = Parquet.Document(Parameter3, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Source
+	lineageTag: f3bad20b-703a-41ea-a799-c0841fd5e9ec
+	queryGroup: 'Transform File from Country stats'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transform File (3)' =
+		let
+		    Source = (Parameter3 as binary) => let
+		    Source = Parquet.Document(Parameter3, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Source
+		in
+		    Source
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transform Sample File (3)""}" ]
+	lineageTag: ee20f0ec-7d10-47ba-b410-1d2f7f302df2
+	queryGroup: 'Transform File from Country stats\Helper Queries'
+
+	annotation PBI_ResultType = Function
+
+expression 'Sample File (4)' =
+		let
+		    Source = AzureStorage.DataLake("https://aviationdatalakegary.dfs.core.windows.net/"),
+		    #"Filtered Rows" = Table.SelectRows(Source, each ([Folder Path] = "https://aviationdatalakegary.dfs.core.windows.net/gold/daily_summary/") and ([Name] = "part-00000-8e9af61f-1014-42f2-9cbe-88d81b65f51d-c000.snappy.parquet")),
+		    Navigation1 = #"Filtered Rows"{0}[Content]
+		in
+		    Navigation1
+	lineageTag: 042683ed-618f-423c-9bca-f479ea5e471c
+	queryGroup: 'Transform File from Query1 (3)\Helper Queries'
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transform Sample File (4)' =
+		let
+		    Source = Parquet.Document(Parameter4, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Source
+	lineageTag: 04a75b4c-97d5-4f99-af58-0f8fd66b4017
+	queryGroup: 'Transform File from Query1 (3)'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transform File (4)' =
+		let
+		    Source = (Parameter4 as binary) => let
+		    Source = Parquet.Document(Parameter4, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Source
+		in
+		    Source
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transform Sample File (4)""}" ]
+	lineageTag: def85f5f-3df3-4919-9d88-785d0a59507a
+	queryGroup: 'Transform File from Query1 (3)\Helper Queries'
+
+	annotation PBI_ResultType = Function
+
+expression Parameter5 = #"Sample File (5)" meta [IsParameterQuery=true, BinaryIdentifier=#"Sample File (5)", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: 2fc6fac9-0494-465d-9d88-7cc676b29731
+	queryGroup: 'Transform File from Country stats (2)\Helper Queries'
+
+	annotation PBI_ResultType = Binary
+
+expression 'Sample File (5)' =
+		let
+		    Source = AzureStorage.DataLake("https://aviationdatalakegary.dfs.core.windows.net/"),
+		    #"Filtered Rows" = Table.SelectRows(Source, each ([Folder Path] = "https://aviationdatalakegary.dfs.core.windows.net/silver/cleaned_flights/") and ([Name] = "part-00000-c1d80666-34f8-4e4b-9525-7d092fbe915b-c000.snappy.parquet")),
+		    Navigation1 = #"Filtered Rows"{0}[Content]
+		in
+		    Navigation1
+	lineageTag: 8b6180de-0a10-457c-9ee2-cae83c7de8ec
+	queryGroup: 'Transform File from Country stats (2)\Helper Queries'
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transform Sample File (5)' =
+		let
+		    Source = Parquet.Document(Parameter5, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Source
+	lineageTag: def05b80-1119-445c-84fa-3e15efb351f4
+	queryGroup: 'Transform File from Country stats (2)'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transform File (5)' =
+		let
+		    Source = (Parameter5 as binary) => let
+		    Source = Parquet.Document(Parameter5, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Source
+		in
+		    Source
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transform Sample File (5)""}" ]
+	lineageTag: ece0afd5-45be-4acc-a81b-50fcda195201
+	queryGroup: 'Transform File from Country stats (2)\Helper Queries'
+
+	annotation PBI_ResultType = Function
+

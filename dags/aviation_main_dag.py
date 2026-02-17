@@ -27,7 +27,7 @@ with DAG(
  #       task_id='ingest_bronze',
  #       bash_command='python3 /opt/airflow/code/bronze_ingestion.py'
  #   )
-    # code for AirFlow to orchestrate ADF
+    #Task 1: code for AirFlow to orchestrate ADF
     ingest_bronze = AzureDataFactoryRunPipelineOperator(
         task_id = 'ingest_bronze_via_adf',
         pipeline_name = 'p_aviation_ingestion',

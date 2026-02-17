@@ -1,0 +1,65 @@
+model Model
+	culture: en-GB
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+queryGroup 'Transform File from Query1'
+
+	annotation PBI_QueryGroupOrder = 0
+
+queryGroup 'Transform File from Query1\Helper Queries'
+
+	annotation PBI_QueryGroupOrder = 0
+
+queryGroup 'Transform File from Query1 (2)'
+
+	annotation PBI_QueryGroupOrder = 2
+
+queryGroup 'Transform File from Query1 (2)\Helper Queries'
+
+	annotation PBI_QueryGroupOrder = 0
+
+queryGroup 'Transform File from Country stats'
+
+	annotation PBI_QueryGroupOrder = 4
+
+queryGroup 'Transform File from Country stats\Helper Queries'
+
+	annotation PBI_QueryGroupOrder = 0
+
+queryGroup 'Transform File from Query1 (3)'
+
+	annotation PBI_QueryGroupOrder = 6
+
+queryGroup 'Transform File from Query1 (3)\Helper Queries'
+
+	annotation PBI_QueryGroupOrder = 0
+
+queryGroup 'Transform File from Country stats (2)'
+
+	annotation PBI_QueryGroupOrder = 8
+
+queryGroup 'Transform File from Country stats (2)\Helper Queries'
+
+	annotation PBI_QueryGroupOrder = 0
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["Country stats","Sample File","Parameter1","Transform Sample File","Transform File","Sample File (2)","Parameter2","Transform Sample File (2)","Transform File (2)","Daily Summary","Sample File (3)","Parameter3","Transform Sample File (3)","Transform File (3)","Sample File (4)","Parameter4","Transform Sample File (4)","Transform File (4)","Cleaned data","Sample File (5)","Parameter5","Transform Sample File (5)","Transform File (5)","Table_test"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table 'Country stats'
+ref table DateTableTemplate_5eb553c7-30a4-43b2-ba8b-00320ab76f29
+ref table 'Daily Summary'
+ref table LocalDateTable_89b435ce-5093-48d6-b8b0-429cf7d66ffb
+ref table 'Cleaned data'
+ref table LocalDateTable_e89a69c9-4fdd-4cf3-9e04-8efa2fddb074
+ref table LocalDateTable_3aa11bd0-8634-4326-b803-3a3ecdfc552f
+ref table Table_test
+
+ref cultureInfo en-GB
+

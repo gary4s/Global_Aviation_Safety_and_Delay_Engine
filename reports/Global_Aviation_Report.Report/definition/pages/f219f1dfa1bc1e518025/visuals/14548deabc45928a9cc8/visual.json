@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "14548deabc45928a9cc8",
+  "position": {
+    "x": 11.636363636363637,
+    "y": 55,
+    "z": 0,
+    "height": 95.418181818181822,
+    "width": 256,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cleaned data"
+                    }
+                  },
+                  "Property": "origin_country"
+                }
+              },
+              "queryRef": "Cleaned data.origin_country",
+              "nativeQueryRef": "Country of Origin",
+              "active": true,
+              "displayName": "Country of Origin"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Dropdown'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {}
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

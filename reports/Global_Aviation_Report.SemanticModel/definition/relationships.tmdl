@@ -1,0 +1,19 @@
+relationship bb4840a6-1606-4b60-beea-c2c614f0b56a
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'Daily Summary'.processed_at
+	toColumn: LocalDateTable_89b435ce-5093-48d6-b8b0-429cf7d66ffb.Date
+
+relationship a70327b0-1610-479f-9368-20d0d119f0d8
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'Cleaned data'.flight_time
+	toColumn: LocalDateTable_e89a69c9-4fdd-4cf3-9e04-8efa2fddb074.Date
+
+relationship 24f6c202-c982-4434-b18b-c4ad72edf2b1
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'Cleaned data'.processed_at
+	toColumn: LocalDateTable_3aa11bd0-8634-4326-b803-3a3ecdfc552f.Date
+
+relationship AutoDetected_1d431f83-39d0-4bb1-8aa4-6212a01d8c70
+	fromColumn: 'Cleaned data'.origin_country
+	toColumn: 'Country stats'.origin_country
+

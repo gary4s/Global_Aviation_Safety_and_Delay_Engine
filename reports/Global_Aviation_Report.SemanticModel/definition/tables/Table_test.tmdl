@@ -1,0 +1,44 @@
+table Table_test
+	lineageTag: f8f5ab6d-748f-4015-b8d9-f063d6d96c77
+
+	column Lat
+		dataType: double
+		lineageTag: 38de3e34-8c12-44ec-a8a9-be4d95528d4e
+		dataCategory: Latitude
+		summarizeBy: none
+		sourceColumn: Lat
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Lon
+		dataType: double
+		lineageTag: e8d7212e-1d8b-4840-818f-16b3ea63c1b1
+		dataCategory: Longitude
+		summarizeBy: none
+		sourceColumn: Lon
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column City
+		dataType: string
+		lineageTag: 4fe0a09f-0cd2-48e6-b37a-5d5d3f78e712
+		summarizeBy: none
+		sourceColumn: City
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Table_test = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WMjXUM1XSUdI10DMEUj75eSn5eUqxOtFKJgZ65iAJcxM9AyDtF+msFBsLAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Lat = _t, Lon = _t, City = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Lat", type number}, {"Lon", type number}, {"City", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

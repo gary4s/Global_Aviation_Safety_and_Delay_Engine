@@ -1,0 +1,210 @@
+table 'Cleaned data'
+	lineageTag: a86513de-1536-4143-a709-02ad32c50ed5
+
+	column icao24
+		dataType: string
+		lineageTag: 99e6a0f4-8208-477b-8364-6aa106ea9300
+		summarizeBy: none
+		sourceColumn: icao24
+
+		annotation SummarizationSetBy = Automatic
+
+	column callsign
+		dataType: string
+		lineageTag: a845c053-4a15-448b-aed7-ca016c5a99e5
+		summarizeBy: none
+		sourceColumn: callsign
+
+		annotation SummarizationSetBy = Automatic
+
+	column origin_country
+		dataType: string
+		lineageTag: 002eea78-b453-47be-83db-c7e581bc6436
+		summarizeBy: none
+		sourceColumn: origin_country
+
+		annotation SummarizationSetBy = Automatic
+
+	column time_position
+		dataType: int64
+		formatString: 0
+		lineageTag: 812d0733-8853-4a51-8dd9-d7d15f145b33
+		summarizeBy: sum
+		sourceColumn: time_position
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_contact
+		dataType: int64
+		formatString: 0
+		lineageTag: c74023c1-4d42-4494-b968-6260f77575e7
+		summarizeBy: sum
+		sourceColumn: last_contact
+
+		annotation SummarizationSetBy = Automatic
+
+	column long
+		dataType: double
+		formatString: 0.00
+		lineageTag: 33a73945-91d7-46a9-be2d-01fafb8f07f4
+		dataCategory: Longitude
+		summarizeBy: none
+		sourceColumn: long
+
+		annotation SummarizationSetBy = User
+
+	column lat
+		dataType: double
+		formatString: 0.00
+		lineageTag: f51bec55-4b8d-47d9-80fe-9bfcd3197e9d
+		dataCategory: Latitude
+		summarizeBy: none
+		sourceColumn: lat
+
+		annotation SummarizationSetBy = User
+
+	column baro_altitude
+		dataType: double
+		lineageTag: fe6c165c-e29c-41dc-9553-62799703869c
+		summarizeBy: sum
+		sourceColumn: baro_altitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column on_ground
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 06b3b946-449c-4fd9-b941-a69ced107744
+		summarizeBy: none
+		sourceColumn: on_ground
+
+		annotation SummarizationSetBy = Automatic
+
+	column velocity
+		dataType: double
+		lineageTag: ab814479-45ca-4d3c-8a05-d815c946aaeb
+		summarizeBy: sum
+		sourceColumn: velocity
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column true_track
+		dataType: double
+		lineageTag: 3b956a18-46a8-4b8f-9291-eddf12b6491a
+		summarizeBy: sum
+		sourceColumn: true_track
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column vertical_rate
+		dataType: double
+		lineageTag: 9c71b2e4-a8d5-4024-af4d-3c9278bcf019
+		summarizeBy: sum
+		sourceColumn: vertical_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column sensors
+		dataType: string
+		lineageTag: a279acec-837b-41a4-b254-c05c3ac9b75e
+		summarizeBy: none
+		sourceColumn: sensors
+
+		annotation SummarizationSetBy = Automatic
+
+	column geo_altitude
+		dataType: double
+		lineageTag: 643ba556-f5d0-4217-bb80-936dae2efa17
+		summarizeBy: sum
+		sourceColumn: geo_altitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column squawk
+		dataType: int64
+		formatString: 0
+		lineageTag: edf381d8-f5b3-4d82-ace8-34a09d757ebd
+		summarizeBy: sum
+		sourceColumn: squawk
+
+		annotation SummarizationSetBy = Automatic
+
+	column spi
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 04177c57-b6f1-43c5-a0b5-282001a8a3a2
+		summarizeBy: none
+		sourceColumn: spi
+
+		annotation SummarizationSetBy = Automatic
+
+	column position_source
+		dataType: int64
+		formatString: 0
+		lineageTag: eccd90a9-a8ea-4e3f-b7d5-71604043c0fb
+		summarizeBy: sum
+		sourceColumn: position_source
+
+		annotation SummarizationSetBy = Automatic
+
+	column flight_time
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 0491762d-c012-4f1f-89f4-599494f77eee
+		summarizeBy: none
+		sourceColumn: flight_time
+
+		variation Variation
+			isDefault
+			relationship: a70327b0-1610-479f-9368-20d0d119f0d8
+			defaultHierarchy: LocalDateTable_e89a69c9-4fdd-4cf3-9e04-8efa2fddb074.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column processed_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 76b77858-d53f-4edb-926e-c1be4ace72c1
+		summarizeBy: none
+		sourceColumn: processed_at
+
+		variation Variation
+			isDefault
+			relationship: 24f6c202-c982-4434-b18b-c4ad72edf2b1
+			defaultHierarchy: LocalDateTable_3aa11bd0-8634-4326-b803-3a3ecdfc552f.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Cleaned data' = m
+		mode: import
+		source =
+				let
+				    Source = AzureStorage.DataLake("https://aviationdatalakegary.dfs.core.windows.net/"),
+				    #"Filtered Rows" = Table.SelectRows(Source, each ([Folder Path] = "https://aviationdatalakegary.dfs.core.windows.net/silver/cleaned_flights/") and ([Name] = "part-00000-c1d80666-34f8-4e4b-9525-7d092fbe915b-c000.snappy.parquet")),
+				    #"Filtered Hidden Files1" = Table.SelectRows(#"Filtered Rows", each [Attributes]?[Hidden]? <> true),
+				    #"Invoke Custom Function1" = Table.AddColumn(#"Filtered Hidden Files1", "Transform File (5)", each #"Transform File (5)"([Content])),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Invoke Custom Function1", {"Name", "Source.Name"}),
+				    #"Removed Other Columns1" = Table.SelectColumns(#"Renamed Columns1", {"Source.Name", "Transform File (5)"}),
+				    #"Expanded Table Column1" = Table.ExpandTableColumn(#"Removed Other Columns1", "Transform File (5)", Table.ColumnNames(#"Transform File (5)"(#"Sample File (5)"))),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Expanded Table Column1",{{"Source.Name", type text}, {"icao24", type text}, {"callsign", type text}, {"origin_country", type text}, {"time_position", Int64.Type}, {"last_contact", Int64.Type}, {"long", type number}, {"lat", type number}, {"baro_altitude", type number}, {"on_ground", type logical}, {"velocity", type number}, {"true_track", type number}, {"vertical_rate", type number}, {"sensors", type any}, {"geo_altitude", type number}, {"squawk", Int64.Type}, {"spi", type logical}, {"position_source", Int64.Type}, {"flight_time", type datetime}, {"processed_at", type datetime}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Source.Name"}),
+				    #"Changed Type with Locale" = Table.TransformColumnTypes(#"Removed Columns", {{"long", type number}}, "en-GB"),
+				    #"Changed Type with Locale1" = Table.TransformColumnTypes(#"Changed Type with Locale", {{"lat", type number}}, "en-GB"),
+				    #"Changed Type with Locale2" = Table.TransformColumnTypes(#"Changed Type with Locale1", {{"long", type number}, {"lat", type number}}, "en-US")
+				in
+				    #"Changed Type with Locale2"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
