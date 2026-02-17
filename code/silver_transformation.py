@@ -89,6 +89,8 @@ df_bronze = spark.read.parquet(bronze_path)
 df_silver = df_bronze \
     .filter(F.col("callsign").isNotNull()) \
     .withColumn("callsign", F.trim(F.col("callsign"))) \
+    .withColumn("latitude", F.col("latitude").cast("double")) \
+    .withColumn("longitude", F.col("longitude").cast("double")) \
     .withColumn("flight_time", F.from_unixtime(F.col("time_position"))) \
     .withColumn("processed_at", F.current_timestamp()) \
     .dropDuplicates(["icao24", "time_position"])
@@ -101,7 +103,8 @@ print("=" *40 + "\n")
 print(f"Writing cleaned data to: {silver_path}")
 print("=" *40 + "\n")
 
-df_silver.write.mode("overwrite").parquet(silver_path)
+#df_silver.write.mode("overwrite").parquet(silver_path)
+df_silver.write.mode("append").parquet(silver_path)
 
 print("=" *40 + "\n")
 print("Silver Success: Data cleaned and stored")

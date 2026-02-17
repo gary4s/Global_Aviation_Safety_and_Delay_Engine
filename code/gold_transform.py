@@ -74,17 +74,62 @@ def run_gold():
     print("Reading Silver data....")
     print("=" *40)
 
+    # Create a reference list of major airports
+    airports_data = [
+    ("LHR", 51.4700, -0.4543, "London Heathrow"),
+    ("JFK", 40.6413, -73.7781, "New York JFK"),
+    ("DXB", 25.2532, 55.3657, "Dubai International"),
+    ("SIN", 1.3644, 103.9915, "Singapore Changi")
+    ]
+
+    airports_df = spark.createDataFrame(airports_data, ["code", "lat_ref", "lon_ref", "airport_name"])
+
     silver_path = f"abfss://silver@{STORAGE_ACCOUNT}.dfs.core.windows.net/cleaned_flights"
     df_silver = spark.read.parquet(silver_path)
 
-    #Metric 1 - Traffic by country
-    gold_countries = df_silver.groupBy("origin_country").agg(
+    # Metric 1. WINDOW FUNCTION: Track altitude changes per aircraft over time
+    # This requires looking at the Silver history
+    window_spec = Window.partitionBy("icao24").orderBy("flight_time")
+
+    gold_flight = df_silver.withColumn("prev_alt", F.lag("baro_altitude").over(window_spec)) \
+        .withColumn("flight_phase", 
+            F.when(F.col("prev_alt").isNull(), "Initializing")
+             .when(F.col("baro_altitude") > F.col("prev_alt") + 15, "Climbing")
+             .when(F.col("baro_altitude") < F.col("prev_alt") - 15, "Descending")
+             .otherwise("Cruising")
+        )
+
+    # Metric 2. GEOFENCING: Define airport Coordinates
+    # Join every flight with every airport to calculate distances
+    # Warning: Only do this with a small list of airports!
+    df_joined = df_silver.crossJoin(F.broadcast(airports_df))
+
+    # Calculate distance to EACH airport in the list
+    df_dist = df_joined.withColumn("dist", 
+       F.sqrt(F.pow(F.col("latitude") - F.col("lat_ref"), 2) + 
+              F.pow(F.col("longitude") - F.col("lon_ref"), 2))
+    )
+
+    # Filter for planes within the "Zone" (0.2 degrees is ~22km)
+    # Then determine which airport they are actually near
+    df_nearby = df_dist.filter(F.col("dist") < 0.2) \
+       .withColumn("proximity_status", 
+           F.when(F.col("baro_altitude") < 3000, "Landing/Taking Off")
+            .otherwise("Passing Over"))
+
+    # Final analytical table
+    gold_distance = df_nearby.select(
+       "icao24", "callsign", "airport_name", "dist", "proximity_status", "flight_time"
+    )
+
+    # Metric 3. Aggregations (Updating your existing metrics)
+    gold_countries = df_final.groupBy("origin_country").agg(
         F.count("icao24").alias("flight_count"),
         F.avg("velocity").alias("avg_speed_ms"),
-        F.avg("baro_altitude").alias("avg_altitude_m")
+        F.count(F.when(F.col("flight_phase") == "Climbing", 1)).alias("count_climbing")
     ).orderBy(F.col("flight_count").desc())
 
-    #Metric 2 - High Flyer Summary
+    # Metric 4 - High Flyer Summary
     gold_summary = df_silver.select(
         F.current_timestamp().alias("processed_at"),
         F.count("*").alias("total_global_flights")
@@ -99,6 +144,8 @@ def run_gold():
 
     gold_countries.write.mode("overwrite").parquet(f"{gold_base}/country_stats")
     gold_summary.write.mode("overwrite").parquet(f"{gold_base}/daily_summary")
+    gold_flight.write.mode("overwrite").parquet(f"{gold_base}/flight_analytics")
+    gold_distance.write.mode("overwrite").parquet(f"{gold_base}/airport_distance")
 
     print("=" *40)
     print("Gold layer complete")
