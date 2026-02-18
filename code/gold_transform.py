@@ -142,10 +142,10 @@ def run_gold():
 
     gold_base = f"abfss://gold@{STORAGE_ACCOUNT}.dfs.core.windows.net"
 
-    gold_countries.write.mode("overwrite").parquet(f"{gold_base}/country_stats")
+    gold_countries.write.mode("append").parquet(f"{gold_base}/country_stats")
     gold_summary.write.mode("overwrite").parquet(f"{gold_base}/daily_summary")
-    gold_flight.write.mode("overwrite").parquet(f"{gold_base}/flight_analytics")
-    gold_distance.write.mode("overwrite").parquet(f"{gold_base}/airport_distance")
+    gold_flight.write.mode("append").parquet(f"{gold_base}/flight_analytics")
+    gold_distance.write.mode("append").parquet(f"{gold_base}/airport_distance")
 
     print("=" *40)
     print("Gold layer complete")
