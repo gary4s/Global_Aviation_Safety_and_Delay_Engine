@@ -33,4 +33,4 @@ Window Logic: Solved complex state-tracking challenges using F.lag() to monitor 
 Automated Scheduling: Configured an Airflow DAG with an end_date and catchup=False to manage Azure costs while maintaining a consistent data flow.
 
 # Architecture diagram
-![Architecture Diagram](assets/Process flow.png )
+![Architecture Diagram](assets/Process flow.png)
