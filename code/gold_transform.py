@@ -107,8 +107,8 @@ def run_gold():
 
     # Calculate distance to EACH airport in the list
     df_dist = df_joined.withColumn("dist", 
-       F.sqrt(F.pow(F.col("lat") - F.col("lat_ref"), 2) + 
-              F.pow(F.col("long") - F.col("lon_ref"), 2))
+       F.sqrt(F.pow(F.col("latitude") - F.col("lat_ref"), 2) + 
+              F.pow(F.col("longitude") - F.col("lon_ref"), 2))
     )
 
     # Filter for planes within the "Zone" (0.2 degrees is ~22km)

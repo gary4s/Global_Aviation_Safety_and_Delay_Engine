@@ -100,6 +100,7 @@ df_bronze = df_exploded.select(
     F.col("s")[0].alias("icao24"),
     F.col("s")[1].alias("callsign"),
     F.col("s")[2].alias("origin_country"),
+    F.col("s")[4].alias("time_position"),
     F.col("s")[5].alias("longitude"),
     F.col("s")[6].alias("latitude"),
     F.col("s")[7].alias("baro_altitude"),
@@ -113,8 +114,12 @@ df_bronze = df_exploded.select(
 df_silver = df_bronze \
     .filter(F.col("callsign").isNotNull()) \
     .withColumn("callsign", F.trim(F.col("callsign"))) \
-    .withColumn("latitude", F.col("lat").cast("double")) \
-    .withColumn("longitude", F.col("long").cast("double")) \
+    .withColumn("latitude", F.col("latitude").cast("double")) \
+    .withColumn("longitude", F.col("longitude").cast("double")) \
+    .withColumn("baro_altitude", F.col("baro_altitude").cast("double")) \
+    .withColumn("velocity", F.col("velocity").cast("double")) \
+    .withColumn("true_track", F.col("true_track").cast("double")) \
+    .withColumn("vertical_rate", F.col("vertical_rate").cast("double")) \
     .withColumn("flight_time", F.from_unixtime(F.col("time_position"))) \
     .withColumn("processed_at", F.current_timestamp()) \
     .dropDuplicates(["icao24", "time_position"])
