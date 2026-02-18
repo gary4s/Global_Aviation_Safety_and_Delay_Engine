@@ -1,34 +1,36 @@
-# Global_Aviation_Safety_and_Delay_Engine
-A pipeline that ingests flight data and weather conditions to predict landing delays.
+# Real-Time Aviation Analytics: Medallion Architecture on Azure
+A robust end-to-end data engineering pipeline that ingests live flight data from the OpenSky API, processes it through a Medallion Architecture (Bronze, Silver, Gold) using PySpark, and visualizes global flight trends in Power BI.
 
-## Project: Cloud-Native Aviation Data Intelligence
-End-to-End Azure Data Engineering & Predictive Analytics
+# Architecture Overview
+This project demonstrates a hybrid-cloud approach, leveraging Docker for local orchestration and Azure for scalable data processing and storage.
 
-# Project Overview
-This project demonstrates a production-grade Medallion Architecture using the Azure ecosystem. It automates the ingestion, transformation, and predictive modeling of global flight data to forecast arrival delays based on real-time weather conditions.
-Instead of a static script, this is a fully orchestrated system bridging the gap between raw data ingestion and "Model-as-a-Service" deployment.
+- Orchestration: Apache Airflow (running in Docker)
+- Ingestion: Azure Data Factory (ADF)
+- Security: Azure Key Vault (Service Principal authentication)
+- Storage: Azure Data Lake Storage Gen2 (ADLS)
+- Compute: PySpark (Azure/Local)
+- Visualization: Power BI
 
-## The Tech Stack
-Orchestration: Azure Data Factory (ADF)
-Processing: Databricks (PySpark / Spark SQL)
-Storage: Azure Data Lake Storage (ADLS) Gen2 (Delta Lake format)
-Environment: Docker (Local Dev & Model Serving)
-Data Science: Scikit-Learn & MLflow
-Security: Azure Key Vault (Secret Management)
+# Data Flow (The Medallion Journey)
+Bronze Layer: Raw Ingestion
+    Process: ADF triggers an API call to OpenSky every 60 minutes.
+    State: Raw JSON data is landed "as-is" to ensure a source of truth for potential reprocessing.
 
-## System Architecture
-Ingestion (Bronze): ADF triggers a Python-based ingestion (packaged in Docker) to pull flight data from the OpenSky API into raw JSON format.
-Transformation (Silver): A Databricks Spark job cleans the data, enforces schemas, and joins flight records with weather telemetry.
-Aggregation (Gold): Cleaned data is aggregated into high-performance Delta Tables optimized for machine learning.
-Intelligence: A Random Forest model is trained on Databricks to predict delays, tracked via MLflow, and deployed as a containerized FastAPI service.
+Silver Layer: Data Cleaning
+    Process: PySpark jobs perform schema enforcement and data quality checks.
+    Transformations: Renaming columns (e.g., lat/long to latitude/longitude), type casting, and filtering null coordinates.
 
-## Engineering Highlights
-Containerization: Used Docker to ensure the local development environment perfectly matches the cloud production environment.
-ACID Transactions: Implemented Delta Lake to allow for time-travel, data versioning, and reliable upserts.
-Scalability: Leveraged Databricks clusters to handle distributed PySpark processing, allowing the pipeline to scale to millions of rows.
-CI/CD Ready: The repository includes JSON templates for ADF and Dockerfiles for the model API, making the entire stack reproducible.
+Gold Layer: Business Analytics
+    Process: Advanced analytical transformations for downstream reporting.
+    Metrics: * Flight Phase Detection: Using Spark Window functions to determine if a plane is Climbing, Descending, or Cruising.
+    Geofencing: Calculating distance-from-airport metrics to identify proximity status (e.g., Landing/Taking Off vs Passing Over).
 
-## Key Outcomes
-Automated Pipeline: Reduced manual data processing time by 100% through ADF scheduling.
-Data Reliability: Implemented schema validation in the Silver layer to catch upstream API changes.
-Production Deployment: Delivered a containerized ML model ready for integration with front-end applications.
+# Key Features & Challenges
+Dynamic Security: Implemented Azure Key Vault integration to securely manage secrets, ensuring no credentials are hardcoded in the PySpark scripts.
+
+Window Logic: Solved complex state-tracking challenges using F.lag() to monitor altitude changes over time per aircraft.
+
+Automated Scheduling: Configured an Airflow DAG with an end_date and catchup=False to manage Azure costs while maintaining a consistent data flow.
+
+# Architecture diagram
+![Architecture Diagram](assets/Process flow.png )
