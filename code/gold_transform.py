@@ -97,7 +97,8 @@ def run_gold():
              .when(F.col("baro_altitude") > F.col("prev_alt") + 15, "Climbing")
              .when(F.col("baro_altitude") < F.col("prev_alt") - 15, "Descending")
              .otherwise("Cruising")
-        )
+        )\
+        .withColumn("processed_at", F.current_timestamp())
 
     # Metric 2. GEOFENCING: Define airport Coordinates
     # Join every flight with every airport to calculate distances
@@ -119,11 +120,11 @@ def run_gold():
 
     # Final analytical table
     gold_distance = df_nearby.select(
-       "icao24", "callsign", "airport_name", "dist", "proximity_status", "flight_time"
+       "icao24", "callsign", "airport_name", "dist", "proximity_status", "flight_time", "processed_at"
     )
 
     # Metric 3. Aggregations (Updating your existing metrics)
-    gold_countries = gold_flight.groupBy("origin_country").agg(
+    gold_countries = gold_flight.groupBy("origin_country", "processed_at").agg(
         F.count("icao24").alias("flight_count"),
         F.avg("velocity").alias("avg_speed_ms"),
         F.count(F.when(F.col("flight_phase") == "Climbing", 1)).alias("count_climbing")

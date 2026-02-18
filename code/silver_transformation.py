@@ -85,12 +85,28 @@ spark = SparkSession.builder \
 
 # Read data from bronze
 
-bronze_path = f"abfss://bronze@{STORAGE_ACCOUNT}.dfs.core.windows.net/raw_flights"
+bronze_path = f"abfss://bronze@{STORAGE_ACCOUNT}.dfs.core.windows.net/raw_data"
 print("=" *40 + "\n")
 print(f"Reading data from: {bronze_path}")
 print("=" *40 + "\n")
 
-df_bronze = spark.read.parquet(bronze_path)
+df_raw = spark.read.json(bronze_path)
+
+df_exploded = df_raw.select(F.explode("states").alias("s"))
+
+# 3. Map the array indices to real names
+# OpenSky uses fixed positions in the array: 0=icao24, 1=callsign, etc.
+df_bronze = df_exploded.select(
+    F.col("s")[0].alias("icao24"),
+    F.col("s")[1].alias("callsign"),
+    F.col("s")[2].alias("origin_country"),
+    F.col("s")[5].alias("longitude"),
+    F.col("s")[6].alias("latitude"),
+    F.col("s")[7].alias("baro_altitude"),
+    F.col("s")[9].alias("velocity"),
+    F.col("s")[10].alias("true_track"),
+    F.col("s")[11].alias("vertical_rate")
+)
 
 # transformations
 
