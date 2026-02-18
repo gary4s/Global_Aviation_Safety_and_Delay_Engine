@@ -16,8 +16,10 @@ with DAG(
     dag_id = 'aviation_medallion_pipeline',
     default_args = default_args,
     description = 'Automated Bronze to Gold pipeline',
-    schedule_interval = None,
-    start_date = datetime(2024, 1, 1),
+    schedule = timedelta(minutes=60),
+    #schedule_interval = None,
+    start_date = datetime(2026, 2, 15),
+    end_date = datetime(2026, 2, 20),
     catchup = False,
     tags = ['aviation'],
 ) as dag:
@@ -32,6 +34,8 @@ with DAG(
         task_id = 'ingest_bronze_via_adf',
         pipeline_name = 'p_aviation_ingestion',
         azure_data_factory_conn_id = 'azure_data_factory_conn',
+        resource_group_name='rg-aviation-project',
+        factory_name='aviation-adf-gary',
         wait_for_termination = True,
         dag=dag,
     )

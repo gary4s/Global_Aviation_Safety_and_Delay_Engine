@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, Window
 import pyspark.sql.functions as F
 from azure.identity import ClientSecretCredential
 from azure.keyvault.secrets import SecretClient
@@ -60,13 +60,13 @@ except Exception as e:
 
 #BUILD THE SPARK SESSION
 spark = SparkSession.builder \
-    .appName("Aviation_EDA") \
+    .appName("Aviation_Gold_Transformation") \
     .config("spark.jars.packages", "org.apache.hadoop:hadoop-azure:3.3.4,com.microsoft.azure:azure-storage:8.6.6") \
-    .config(f"fs.azure.account.auth.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "OAuth") \
-    .config(f"fs.azure.account.oauth.provider.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider") \
-    .config(f"fs.azure.account.oauth2.client.id.{STORAGE_ACCOUNT}.dfs.core.windows.net", CLIENT_ID) \
-    .config(f"fs.azure.account.oauth2.client.secret.{STORAGE_ACCOUNT}.dfs.core.windows.net", VAULT_CLIENT_SECRET) \
-    .config(f"fs.azure.account.oauth2.client.endpoint.{STORAGE_ACCOUNT}.dfs.core.windows.net", f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/token") \
+    .config(f"spark.hadoop.fs.azure.account.auth.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "OAuth") \
+    .config(f"spark.hadoop.fs.azure.account.oauth.provider.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider") \
+    .config(f"spark.hadoop.fs.azure.account.oauth2.client.id.{STORAGE_ACCOUNT}.dfs.core.windows.net", CLIENT_ID) \
+    .config(f"spark.hadoop.fs.azure.account.oauth2.client.secret.{STORAGE_ACCOUNT}.dfs.core.windows.net", VAULT_CLIENT_SECRET) \
+    .config(f"spark.hadoop.fs.azure.account.oauth2.client.endpoint.{STORAGE_ACCOUNT}.dfs.core.windows.net", f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/token") \
     .getOrCreate()
 
 def run_gold():
@@ -106,8 +106,8 @@ def run_gold():
 
     # Calculate distance to EACH airport in the list
     df_dist = df_joined.withColumn("dist", 
-       F.sqrt(F.pow(F.col("latitude") - F.col("lat_ref"), 2) + 
-              F.pow(F.col("longitude") - F.col("lon_ref"), 2))
+       F.sqrt(F.pow(F.col("lat") - F.col("lat_ref"), 2) + 
+              F.pow(F.col("long") - F.col("lon_ref"), 2))
     )
 
     # Filter for planes within the "Zone" (0.2 degrees is ~22km)
@@ -123,7 +123,7 @@ def run_gold():
     )
 
     # Metric 3. Aggregations (Updating your existing metrics)
-    gold_countries = df_final.groupBy("origin_country").agg(
+    gold_countries = gold_flight.groupBy("origin_country").agg(
         F.count("icao24").alias("flight_count"),
         F.avg("velocity").alias("avg_speed_ms"),
         F.count(F.when(F.col("flight_phase") == "Climbing", 1)).alias("count_climbing")

@@ -22,6 +22,8 @@ services:
   postgres:
     image: postgres:13
     container_name: aviation_db
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=airflow
       - POSTGRES_PASSWORD=airflow
@@ -34,11 +36,18 @@ services:
     container_name: aviation_airflow
     depends_on:
       - postgres
+    env_file:
+      - .env #get docker to load .env file  
     environment:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__WEBSERVER__AUTHENTICATE=False
       - AIRFLOW_ADMIN_USER=admin
       - AIRFLOW_ADMIN_PASSWORD=admin123
+      - AIRFLOW_CONN_AZURE_DATA_FACTORY_CONN=azure_data_factory://3b31bffa-4398-4c45-bbab-9e617f04fdc0:5%7Eh8Q%7EOEFpe9Bi6rJYBxIlxZ22_zxm3Bfs%7ETZazb@f771d400-a8e3-4001-91c3-4903c9f77ae5?subscriptionId=9f3e66e1-3418-4d0e-aff2-4ca272dbe40c&resourceGroupName=rg-aviation-project&factoryName=aviation-adf-gary
+      - AIRFLOW__CORE__TEST_CONNECTION=Enabled
+      - AZURE_CLIENT_ID=${CLIENT_ID}
+      - AZURE_TENANT_ID=${TENANT_ID}
+      - AZURE_CLIENT_SECRET=${CLIENT_SECRET}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./code:/opt/airflow/code

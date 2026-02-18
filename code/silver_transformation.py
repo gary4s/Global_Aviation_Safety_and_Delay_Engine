@@ -57,7 +57,9 @@ try:
 
     #fetch secret from the vault instead of using local .env file
     VAULT_CLIENT_SECRET = client.get_secret("CLIENT-SECRET").value
+    print("=" *40)
     print("\n[SUCCESS] Connected to Key Vault and retrieved secrets.")
+    print("=" *40 + "\n")
 
 except Exception as e:
     print("\n" + "!"*40)
@@ -65,15 +67,21 @@ except Exception as e:
     print("!"*40)
     sys.exit(1)
 
+#print("=" *40 + "\n")
+## Temporary Debug - check the last 3 characters to see if they match your new secret
+#print(f"DEBUG: Secret from Vault ends with: ...{VAULT_CLIENT_SECRET[-3:]}")
+#print(f"DEBUG: Secret from .env ends with:  ...{CLIENT_SECRET[-3:]}")
+#print("=" *40 + "\n")
+
 spark = SparkSession.builder \
     .appName("Aviation_Silver_Transformation") \
     .config("spark.jars.packages", "org.apache.hadoop:hadoop-azure:3.3.4,com.microsoft.azure:azure-storage:8.6.6") \
-    .config(f"fs.azure.account.auth.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "OAuth") \
-    .config(f"fs.azure.account.oauth.provider.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider") \
-    .config(f"fs.azure.account.oauth2.client.id.{STORAGE_ACCOUNT}.dfs.core.windows.net", CLIENT_ID) \
-    .config(f"fs.azure.account.oauth2.client.secret.{STORAGE_ACCOUNT}.dfs.core.windows.net", VAULT_CLIENT_SECRET) \
-    .config(f"fs.azure.account.oauth2.client.endpoint.{STORAGE_ACCOUNT}.dfs.core.windows.net", f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/token") \
-    .getOrCreate()    
+    .config(f"spark.hadoop.fs.azure.account.auth.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "OAuth") \
+    .config(f"spark.hadoop.fs.azure.account.oauth.provider.type.{STORAGE_ACCOUNT}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider") \
+    .config(f"spark.hadoop.fs.azure.account.oauth2.client.id.{STORAGE_ACCOUNT}.dfs.core.windows.net", CLIENT_ID) \
+    .config(f"spark.hadoop.fs.azure.account.oauth2.client.secret.{STORAGE_ACCOUNT}.dfs.core.windows.net", VAULT_CLIENT_SECRET) \
+    .config(f"spark.hadoop.fs.azure.account.oauth2.client.endpoint.{STORAGE_ACCOUNT}.dfs.core.windows.net", f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/token") \
+    .getOrCreate()
 
 # Read data from bronze
 
@@ -89,8 +97,8 @@ df_bronze = spark.read.parquet(bronze_path)
 df_silver = df_bronze \
     .filter(F.col("callsign").isNotNull()) \
     .withColumn("callsign", F.trim(F.col("callsign"))) \
-    .withColumn("latitude", F.col("latitude").cast("double")) \
-    .withColumn("longitude", F.col("longitude").cast("double")) \
+    .withColumn("latitude", F.col("lat").cast("double")) \
+    .withColumn("longitude", F.col("long").cast("double")) \
     .withColumn("flight_time", F.from_unixtime(F.col("time_position"))) \
     .withColumn("processed_at", F.current_timestamp()) \
     .dropDuplicates(["icao24", "time_position"])
