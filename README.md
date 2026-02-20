@@ -1,4 +1,4 @@
-# Real-Time Aviation Analytics: Medallion Architecture on Azure
+# Real-Time Aviation Analytics: Medallion Architecture on Azure - Docker - Airflow
 A robust end-to-end data engineering pipeline that ingests live flight data from the OpenSky API, processes it through a Medallion Architecture (Bronze, Silver, Gold) using PySpark, and visualizes global flight trends in Power BI.
 
 # Architecture Overview
